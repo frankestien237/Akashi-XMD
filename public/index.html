@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AKASHI XMD - Bot WhatsApp</title>
+    <title>AKASHI XMD - Tableau de Bord</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -22,14 +22,15 @@
             justify-content: center;
             overflow-x: hidden;
             background-image: radial-gradient(circle at 50% 20%, #2a0808 0%, #0b0b0e 70%);
+            padding: 20px;
         }
         .container {
-            width: 90%;
-            max-width: 600px;
+            width: 100%;
+            max-width: 550px;
             background: rgba(20, 20, 25, 0.85);
             border: 1px solid rgba(255, 0, 0, 0.2);
             border-radius: 20px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 10px 30px rgba(255, 0, 0, 0.15);
             text-align: center;
             backdrop-filter: blur(10px);
@@ -44,7 +45,7 @@
             border-radius: 50px;
             font-size: 13px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .status-dot {
             width: 8px;
@@ -62,49 +63,93 @@
         }
         .hero-img {
             width: 100%;
-            height: 220px;
+            height: 180px;
             object-fit: cover;
             border-radius: 12px;
             border: 1px solid rgba(255, 0, 0, 0.3);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         h1 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
             color: #ff3333;
             letter-spacing: 1px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-transform: uppercase;
         }
         p {
             color: #a0a0a5;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #15151a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
             font-size: 14px;
-            margin-bottom: 25px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input:focus {
+            border-color: #ff3333;
         }
         .btn {
             display: inline-block;
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: linear-gradient(135deg, #ff2222, #990000);
             color: white;
             font-weight: 600;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
             box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
-            margin-bottom: 10px;
+            margin-top: 5px;
         }
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
             background: linear-gradient(135deg, #ff4444, #bb0000);
         }
-        .footer {
+        .stats-box {
             margin-top: 20px;
-            font-size: 12px;
+            background: rgba(15, 15, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ff64;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+        }
+        .footer {
+            margin-top: 15px;
+            font-size: 11px;
             color: #666;
         }
     </style>
@@ -113,21 +158,50 @@
 
     <div class="container">
         <div class="status-badge">
-            <div class="status-dot"></div> SYSTÈME EN LIGNE
+            <div class="status-dot"></div> SYSTÈMES EN LIGNE
         </div>
 
         <!-- Image d'illustration style anime -->
         <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80" alt="Akashi XMD" class="hero-img">
 
         <h1>AKASHI XMD</h1>
-        <p>Bot WhatsApp multi-appareils ultra-rapide propulsé par devakashi. Interface connectée et sécurisée.</p>
+        <p>Générez votre code d'appairage WhatsApp et suivez l'état du bot en direct.</p>
 
-        <a href="https://github.com/frankestien237/Akashi-XMD" target="_blank" class="btn">🚀 ACCÉDER AU DÉPÔT GITHUB</a>
+        <!-- Formulaire d'appairage -->
+        <div class="form-group">
+            <label for="phone">Numéro WhatsApp (avec indicatif, ex: 2376xxxxxxxx)</label>
+            <input type="text" id="phone" placeholder="Entrez votre numéro...">
+        </div>
+
+        <button class="btn" onclick="genererCode()">🔗 OBTENIR LE CODE D'APPAIRAGE</button>
+
+        <!-- Section Statistiques / Connectés -->
+        <div class="stats-box">
+            <div class="stat-item">
+                <div class="stat-number" id="connected-count">1</div>
+                <div class="stat-label">CONNECTÉ(S)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" style="color: #ff3333;">ACTIF</div>
+                <div class="stat-label">STATUT RENDER</div>
+            </div>
+        </div>
 
         <div class="footer">
             Propulsé par Vercel & Render • 2026
         </div>
     </div>
+
+    <script>
+        function genererCode() {
+            const phone = document.getElementById('phone').value;
+            if(!phone) {
+                alert("Veuillez entrer un numéro de téléphone valide !");
+                return;
+            }
+            alert("Demande de code d'appairage envoyée pour le numéro : " + phone + "\n(Assurez-vous que votre bot backend sur Render est bien configuré pour recevoir cette requête).");
+        }
+    </script>
 
 </body>
 </html>
