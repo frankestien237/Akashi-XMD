@@ -1,19 +1,16 @@
 {
-  "$schema": "https://json.schemastore.org/package.json",
-  "name": "akashi-xmd",
+  "name": "akashi-xdm",
   "version": "1.0.0",
-  "description": "WhatsApp Bot",
+  "description": "WhatsApp Multi-Device Bot",
   "main": "index.js",
   "type": "module",
   "scripts": {
-  "start": "node index.js"
-}
+    "start": "node index.js"
   },
   "dependencies": {
-  "@whiskeysockets/baileys": "^6.x.x",
-  "express": "^4.19.2",
-  "cors": "^2.8.5",
-  "pino": "^8.x.x"
-}
+    "@whiskeysockets/baileys": "^6.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pino": "^8.19.0"
   }
 }
