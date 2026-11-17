@@ -277,10 +277,14 @@ app.get('/pair', async (req, res) => {
         }
 
         const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
-        let code = await activeSock.requestPairingCode(cleanNumber);
-        code = code?.match(/.{1,4}/g)?.join('-') || code;
         
-        return res.json({ code: code });
+        if (!activeSock.authState.creds.registered) {
+            let code = await activeSock.requestPairingCode(cleanNumber);
+            code = code?.match(/.{1,4}/g)?.join('-') || code;
+            return res.json({ code: code });
+        } else {
+            return res.status(400).json({ error: "Le bot est déjà enregistré et connecté !" });
+        }
     } catch (err) {
         console.error("Erreur route /pair:", err);
         res.status(500).json({ error: "Erreur interne lors de la génération du code." });
