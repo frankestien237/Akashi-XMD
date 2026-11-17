@@ -10,10 +10,10 @@
 }
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "latest",
-    "axios": "latest",
-    "moment-timezone": "latest",
-    "pino": "latest",
-    "wa-sticker-formatter": "latest"
+  "@whiskeysockets/baileys": "^6.x.x",
+  "express": "^4.19.2",
+  "cors": "^2.8.5",
+  "pino": "^8.x.x"
+}
   }
 }
