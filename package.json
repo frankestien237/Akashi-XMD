@@ -1,8 +1,10 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "akashi-xmd",
   "version": "1.0.0",
   "description": "WhatsApp Bot",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
@@ -13,8 +15,5 @@
     "pino": "latest",
     "qrcode-terminal": "latest",
     "wa-sticker-formatter": "latest"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }
