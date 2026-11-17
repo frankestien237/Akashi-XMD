@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/package.json",
   "name": "akashi-xmd",
   "version": "1.0.0",
   "description": "WhatsApp Bot",
@@ -13,7 +12,6 @@
     "axios": "latest",
     "moment-timezone": "latest",
     "pino": "latest",
-    "qrcode-terminal": "latest",
     "wa-sticker-formatter": "latest"
   }
 }
