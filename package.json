@@ -8,8 +8,11 @@
   },
   "dependencies": {
     "@whiskeysockets/baileys": "latest",
+    "axios": "latest",
+    "moment-timezone": "latest",
     "pino": "latest",
-    "qrcode-terminal": "latest"
+    "qrcode-terminal": "latest",
+    "wa-sticker-formatter": "latest"
   },
   "keywords": [],
   "author": "",
