@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AKASHI XDM - Tableau de Bord</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>AKASHI XDM - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -19,108 +19,292 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 50% 20%, #2a0808 0%, #0b0b0e 70%);
-            padding: 20px;
+            padding: 30px 20px;
+            background-image: radial-gradient(circle at 50% 10%, #1f0505 0%, #0b0b0e 60%);
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+        .brand-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ff3333;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
         .container {
             width: 100%;
-            max-width: 550px;
-            background: rgba(20, 20, 25, 0.85);
-            border: 1px solid rgba(255, 0, 0, 0.2);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.15);
-            text-align: center;
-            backdrop-filter: blur(10px);
+            max-width: 600px;
         }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            background: rgba(0, 255, 100, 0.1);
-            border: 1px solid rgba(0, 255, 100, 0.3);
-            color: #00ff64;
-            padding: 6px 15px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
+        .main-card {
+            background: rgba(18, 18, 24, 0.85);
+            border: 1px solid rgba(255, 51, 51, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             margin-bottom: 15px;
         }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00ff64;
-            border-radius: 50%;
-            margin-right: 8px;
-            box-shadow: 0 0 8px #00ff64;
-            animation: pulse 1.5s infinite;
+        .hero-banner {
+            position: relative;
+            width: calc(100% + 40px);
+            height: 200px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 51, 51, 0.3);
         }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
-        .hero-img {
+        .hero-banner img {
             width: 100%;
-            height: 180px;
+            height: 100%;
             object-fit: cover;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            margin-bottom: 15px;
         }
-        h1 {
-            font-size: 24px;
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(11, 11, 14, 0.95), rgba(11, 11, 14, 0.2));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+        .hero-title {
+            font-size: 22px;
             font-weight: 700;
             color: #ff3333;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        p {
-            color: #a0a0a5;
-            font-size: 13px;
+        .hero-subtitle {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .main-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        .main-card p {
+            font-size: 12px;
+            color: #888;
             margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        label {
-            font-size: 12px;
-            color: #ccc;
-            margin-bottom: 5px;
+        .form-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
             display: block;
         }
-        input {
+        .select-box, .input-row {
             width: 100%;
-            padding: 12px;
-            background: #15151a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            background: #141419;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            color: white;
+            outline: none;
+        }
+        .select-box {
+            padding: 12px 15px;
+            font-size: 13px;
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+        .prefix {
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            color: #aaa;
+        }
+        .phone-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 15px;
             color: white;
             font-size: 14px;
             outline: none;
-            transition: border 0.3s;
         }
-        input:focus {
-            border-color: #ff3333;
-        }
-        .btn {
-            display: inline-block;
+        .btn-submit {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #ff2222, #990000);
+            padding: 14px;
+            background: linear-gradient(135deg, #ff2222, #aa0000);
             color: white;
             font-weight: 600;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 10px;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
-            margin-top: 5px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(135deg, #ff4444, #bb0000);
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+        }
+        .grid-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .card {
+            background: rgba(18, 18, 24, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 16px;
+            position: relative;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .card-value.online {
+            color: #00ff64;
+            font-size: 16px;
+        }
+        .footer-status {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 11px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            background-color: #00ff64;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #00ff64;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- En-tête propre sans le badge 13 -->
+    <div class="header-top">
+        <span class="brand-title">⚡ AKASHI XDM</span>
+    </div>
+
+    <div class="container">
+        <!-- 1. CARTE PRINCIPALE AVEC PHOTO ET TITRE INCRUSTÉ -->
+        <div class="main-card">
+            <div class="hero-banner">
+                <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80" alt="Akashi XDM">
+                <div class="hero-overlay">
+                    <div class="hero-title">AKASHI XDM</div>
+                    <div class="hero-subtitle">BOT WHATSAPP MULTI-APPAREILS</div>
+                </div>
+            </div>
+
+            <h2>Associez votre WhatsApp</h2>
+            <p>Choisissez votre pays, saisissez votre numéro et obtenez un code d'appairage.</p>
+
+            <label class="form-label">Pays</label>
+            <select class="select-box" id="country">
+                <option value="237">Cameroun (+237)</option>
+                <option value="33">France (+33)</option>
+                <option value="1">États-Unis (+1)</option>
+                <option value="243">Côte d'Ivoire / Autre (+225 / +243)</option>
+            </select>
+
+            <label class="form-label">Numéro WhatsApp</label>
+            <div class="input-row">
+                <div class="prefix" id="prefix-display">+237</div>
+                <input type="text" class="phone-input" id="phone" placeholder="6XXXXXXXX">
+            </div>
+
+            <button class="btn-submit" onclick="genererCode()">
+                🔗 SE CONNECTER À WHATSAPP
+            </button>
+        </div>
+
+        <!-- 2. STATISTIQUES (Commence à 0, s'incrémentera automatiquement) -->
+        <div class="grid-stats">
+            <div class="card">
+                <div class="card-header">
+                    <span>Connecté</span>
+                    <span>👥</span>
+                </div>
+                <div class="card-value" id="connected-count">0</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span>Appariement</span>
+                    <span>⚡</span>
+                </div>
+                <div class="card-value" id="pairing-status">—</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span>Serveur</span>
+                    <span>🟢</span>
+                </div>
+                <div class="card-value online">Online</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span>Système</span>
+                    <span>⚙️</span>
+                </div>
+                <div class="card-value online" style="font-size: 14px;">Operational</div>
+            </div>
+        </div>
+
+        <div class="footer-status">
+            <span class="dot"></span> Serveur en ligne • Propulsé par Render & Vercel
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('country').addEventListener('change', function() {
+            document.getElementById('prefix-display').innerText = '+' + this.value;
+        });
+
+        async function genererCode() {
+            const countryCode = document.getElementById('country').value;
+            const rawPhone = document.getElementById('phone').value.trim();
+            
+            if(!rawPhone) {
+                alert("Veuillez entrer votre numéro de téléphone !");
+                return;
+            }
+
+            const fullPhone = countryCode + rawPhone;
+            alert("Génération du code d'appairage pour le numéro : +" + fullPhone);
+
+            try {
