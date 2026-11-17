@@ -1,10 +1,12 @@
 // ==========================================
-// Bot : AKASHI XMD (by devakashi)
+// Bot : AKASHI XDM (by devakashi)
 // ==========================================
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, downloadMediaMessage, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import pino from 'pino';
 import readline from 'readline';
+import express from 'express';
+import cors from 'cors';
 
 process.env.LOG_LEVEL = 'silent';
 
@@ -13,6 +15,13 @@ const groupCache = new Map();
 const spamTracker = new Map();
 
 const OWNER_NUMBER = "237698278163"; // Ton numéro de propriétaire principal
+
+// Initialisation d'Express pour recevoir les requêtes de Vercel (/pair)
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+let activeSock = null; // Stocke la session active du bot pour le pairing via web
 
 // Fonction pour demander le numéro en local (sur ton PC)
 const question = (text) => {
@@ -87,12 +96,11 @@ async function startBot() {
     cachedGroupMetadata: async (jid) => groupCache.get(jid)
   });
 
+  activeSock = sock; // Sauvegarde l'instance pour la route /pair
   sock.ev.on('creds.update', saveCreds);
 
-  // --- SYSTÈME DE CODE D'APPAIRAGE FLEXIBLE ---
+  // --- SYSTÈME DE CODE D'APPAIRAGE EN LOCAL (CLI) ---
   if (!sock.authState.creds.registered) {
-    // Récupère le numéro depuis la variable d'environnement Render "PHONE_NUMBER" 
-    // ou demande-le si tu lances le bot en local sur ton PC.
     let targetPhone = process.env.PHONE_NUMBER;
 
     if (!targetPhone && process.stdin.isTTY) {
@@ -107,14 +115,12 @@ async function startBot() {
           let code = await sock.requestPairingCode(cleanNumber);
           code = code?.match(/.{1,4}/g)?.join('-') || code;
           console.log(`\n========================================`);
-          console.log(`🔑 CODE D'APPAIRAGE AKASHI XMD : ${code}`);
+          console.log(`🔑 CODE D'APPAIRAGE AKASHI XDM : ${code}`);
           console.log(`========================================\n`);
         } catch (err) {
           console.error("Erreur génération code d'appairage :", err);
         }
       }, 4000);
-    } else {
-      console.log("⚠️ Aucun numéro configuré ! Ajoute la variable 'PHONE_NUMBER' dans les paramètres de Render.");
     }
   }
 
@@ -139,7 +145,7 @@ async function startBot() {
 
         for (const num of participants) {
           const userTag = `@${num.split('@')[0]}`;
-          const welcomeText = `👋 Bienvenue ${userTag} dans **${groupName}** !\n\n📜 Lis bien les règles et amuse-toi bien.\n⚙️ *Propulsé par AKASHI XMD (by devakashi)*`;
+          const welcomeText = `👋 Bienvenue ${userTag} dans **${groupName}** !\n\n📜 Lis bien les règles et amuse-toi bien.\n⚙️ *Propulsé par AKASHI XDM (by devakashi)*`;
           
           await sock.sendMessage(remoteJid, { 
             text: welcomeText, 
@@ -156,7 +162,7 @@ async function startBot() {
     const { connection, lastDisconnect } = update;
     
     if (connection === 'open') {
-      console.log('⚡ AKASHI XMD connecté et sécurisé avec succès ! (by devakashi)');
+      console.log('⚡ AKASHI XDM connecté et sécurisé avec succès ! (by devakashi)');
     } else if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
       if (shouldReconnect) {
@@ -224,7 +230,7 @@ async function startBot() {
         msg.message.extendedTextMessage?.text ||
         msg.message.imageMessage?.caption ||
         msg.message.videoMessage?.caption ||
-        '';
+        ';';
 
       if (!body.startsWith('.')) continue;
 
@@ -257,5 +263,34 @@ async function startBot() {
     }
   });
 }
+
+// --- ROUTE WEB POUR LE PAIRING DEPUIS VERCEL ---
+app.get('/pair', async (req, res) => {
+    const phoneNumber = req.query.phone;
+    if (!phoneNumber) {
+        return res.status(400).json({ error: "Numéro manquant" });
+    }
+
+    try {
+        if (!activeSock) {
+            return res.status(500).json({ error: "Le bot n'est pas encore initialisé sur le serveur." });
+        }
+
+        const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
+        let code = await activeSock.requestPairingCode(cleanNumber);
+        code = code?.match(/.{1,4}/g)?.join('-') || code;
+        
+        return res.json({ code: code });
+    } catch (err) {
+        console.error("Erreur route /pair:", err);
+        res.status(500).json({ error: "Erreur interne lors de la génération du code." });
+    }
+});
+
+// Lancement du serveur Express sur le port assigné par Render (ou 3000 par défaut)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🌐 Serveur Web / API démarré sur le port ${PORT}`);
+});
 
 startBot();
