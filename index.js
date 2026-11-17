@@ -99,6 +99,31 @@ async function startBot() {
     } catch {}
   });
 
+  // --- ÉCOUTEUR DE NOUVEAUX MEMBRES (BIENVENUE) ---
+  sock.ev.on('group-participants.update', async (anu) => {
+    try {
+      const remoteJid = anu.id;
+      const participants = anu.participants;
+      
+      if (anu.action === 'add') {
+        const metadata = await sock.groupMetadata(remoteJid).catch(() => null);
+        const groupName = metadata ? metadata.subject : "le groupe";
+
+        for (const num of participants) {
+          const userTag = `@${num.split('@')[0]}`;
+          const welcomeText = `👋 Bienvenue ${userTag} dans **${groupName}** !\n\n📜 Lis bien les règles et amuse-toi bien.\n⚙️ *Propulsé par AKASHI XMD (by devakashi)*`;
+          
+          await sock.sendMessage(remoteJid, { 
+            text: welcomeText, 
+            mentions: [num] 
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Erreur dans l'événement group-participants.update :", e);
+    }
+  });
+
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect, qr } = update;
     
