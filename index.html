@@ -215,11 +215,13 @@
 </head>
 <body>
 
+    <!-- En-tête propre sans le badge 13 -->
     <div class="header-top">
         <span class="brand-title">⚡ AKASHI XDM</span>
     </div>
 
     <div class="container">
+        <!-- 1. CARTE PRINCIPALE AVEC PHOTO ET TITRE INCRUSTÉ -->
         <div class="main-card">
             <div class="hero-banner">
                 <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80" alt="Akashi XDM">
@@ -251,6 +253,7 @@
             </button>
         </div>
 
+        <!-- 2. STATISTIQUES (Commence à 0, s'incrémentera automatiquement) -->
         <div class="grid-stats">
             <div class="card">
                 <div class="card-header">
@@ -302,10 +305,9 @@
             }
 
             const fullPhone = countryCode + rawPhone;
-            alert("Génération du code d'appairage en cours pour : +" + fullPhone);
+            alert("Génération du code d'appairage pour le numéro : +" + fullPhone);
 
             try {
-                // URL corrigée avec akashi-xdm
                 const renderUrl = "https://akashi-xdm.onrender.com/pair?phone=" + encodeURIComponent(fullPhone);
                 
                 const response = await fetch(renderUrl);
@@ -313,15 +315,16 @@
 
                 if(data.code) {
                     alert("Voici votre code d'appairage WhatsApp : " + data.code);
-                    document.getElementById('pairing-status').innerText = data.code;
+                    // Incrémente le compteur de connecté en direct
                     let currentCount = parseInt(document.getElementById('connected-count').innerText);
                     document.getElementById('connected-count').innerText = currentCount + 1;
+                    document.getElementById('pairing-status').innerText = 'Actif';
                 } else {
-                    alert("Requête transmise à Render avec succès !");
+                    alert("Requête transmise avec succès à Render ! Vérifiez les logs de votre bot.");
                 }
             } catch (error) {
                 console.error(error);
-                alert("Erreur de connexion avec le serveur Render. Vérifie que ton service Render est bien actif.");
+                alert("Erreur de connexion au serveur Render. Assurez-vous que votre bot est bien actif.");
             }
         }
     </script>
