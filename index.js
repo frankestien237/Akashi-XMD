@@ -10,6 +10,7 @@ process.env.LOG_LEVEL = 'silent';
 
 const akashiImageCache = fs.existsSync('./akashi.jpeg') ? fs.readFileSync('./akashi.jpeg') : null;
 const groupCache = new Map();
+const spamTracker = new Map(); // Tracker pour l'anti-spam
 
 const OWNER_NUMBER = "237698278163"; // Ton numéro exact
 
@@ -105,6 +106,10 @@ async function startBot() {
       const remoteJid = anu.id;
       const participants = anu.participants;
       
+      // Vérification des paramètres de bienvenue
+      const settings = fs.existsSync('./settings.json') ? JSON.parse(fs.readFileSync('./settings.json', 'utf-8')) : { welcome: {} };
+      if (!settings.welcome?.[remoteJid]) return; // Ne fait rien si désactivé
+
       if (anu.action === 'add') {
         const metadata = await sock.groupMetadata(remoteJid).catch(() => null);
         const groupName = metadata ? metadata.subject : "le groupe";
@@ -167,6 +172,29 @@ async function startBot() {
       const sender = msg.key.participant || remoteJid;
       const isGroup = remoteJid.endsWith('@g.us');
       const cleanSender = String(sender).replace(/[^0-9]/g, '');
+
+      // --- SYSTÈME ANTI-SPAM ---
+      if (isGroup && !isAuthorized(sender, msg)) {
+        const settings = fs.existsSync('./settings.json') ? JSON.parse(fs.readFileSync('./settings.json', 'utf-8')) : { antispam: {} };
+        if (settings.antispam?.[remoteJid]) {
+          const key = `${remoteJid}_${sender}`;
+          const now = Date.now();
+          const userData = spamTracker.get(key) || { count: 0, lastTime: now };
+
+          if (now - userData.lastTime < 5000) {
+            userData.count += 1;
+            if (userData.count >= 5) {
+              await sock.sendMessage(remoteJid, { delete: msg.key }); // Supprime le message de spam
+              await sock.sendMessage(remoteJid, { text: `⚠️ @${sender.split('@')[0]}, doucement sur le spam !`, mentions: [sender] });
+              userData.count = 0;
+            }
+          } else {
+            userData.count = 1;
+            userData.lastTime = now;
+          }
+          spamTracker.set(key, userData);
+        }
+      }
 
       const viewOnce = msg.message.viewOnceMessage || msg.message.viewOnceMessageV2 || msg.message.viewOnceMessageV2Extension;
       if (viewOnce && !msg.key.fromMe && cleanSender !== OWNER_NUMBER) {
