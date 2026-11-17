@@ -1,22 +1,27 @@
 // ==========================================
 // Bot : AKASHI XMD (by devakashi)
 // ==========================================
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, downloadMediaMessage } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, downloadMediaMessage, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import pino from 'pino';
-import qrcode from 'qrcode-terminal';
+import readline from 'readline';
 
 process.env.LOG_LEVEL = 'silent';
 
 const akashiImageCache = fs.existsSync('./akashi.jpeg') ? fs.readFileSync('./akashi.jpeg') : null;
 const groupCache = new Map();
-const spamTracker = new Map(); // Tracker pour l'anti-spam
+const spamTracker = new Map();
 
-const OWNER_NUMBER = "237698278163"; // Ton numéro exact
+const OWNER_NUMBER = "237698278163"; // Ton numéro de propriétaire principal
+
+// Fonction pour demander le numéro en local (sur ton PC)
+const question = (text) => {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => rl.question(text, (ans) => { rl.close(); resolve(ans); }));
+};
 
 function isAuthorized(senderJid, msg) {
-  if (msg?.key?.fromMe) return true; // 👑 Autorise instantanément tout ce que tu envoies (contourne les LID)
-  
+  if (msg?.key?.fromMe) return true;
   if (!senderJid) return false;
   const cleanSender = String(senderJid).replace(/[^0-9]/g, '');
   
@@ -35,20 +40,9 @@ function isAuthorized(senderJid, msg) {
 }
 
 const adminOnlyCommands = [
-  'mute', 
-  'unmute', 
-  'block', 
-  'sudo', 
-  'delsudo', 
-  'promote', 
-  'demote', 
-  'kick', 
-  'remove', 
-  'kickall', 
-  'ripadmin', 
-  'purge', 
-  'warn', 
-  'setppbot'
+  'mute', 'unmute', 'block', 'sudo', 'delsudo', 
+  'promote', 'demote', 'kick', 'remove', 'kickall', 
+  'ripadmin', 'purge', 'warn', 'setppbot'
 ];
 
 async function sendMediaToOwner(sock, targetMsg, ownerJid, isGroup, actionType) {
@@ -80,8 +74,10 @@ async function sendMediaToOwner(sock, targetMsg, ownerJid, isGroup, actionType) 
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+  const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
+    version,
     auth: state,
     logger: pino({ level: 'silent' }),
     browser: Browsers.ubuntu('Chrome'),
@@ -93,6 +89,35 @@ async function startBot() {
 
   sock.ev.on('creds.update', saveCreds);
 
+  // --- SYSTÈME DE CODE D'APPAIRAGE FLEXIBLE ---
+  if (!sock.authState.creds.registered) {
+    // Récupère le numéro depuis la variable d'environnement Render "PHONE_NUMBER" 
+    // ou demande-le si tu lances le bot en local sur ton PC.
+    let targetPhone = process.env.PHONE_NUMBER;
+
+    if (!targetPhone && process.stdin.isTTY) {
+      targetPhone = await question('📱 Entre le numéro WhatsApp pour connecter le bot (ex: 2376xxxxxxxx) : ');
+    }
+
+    if (targetPhone) {
+      setTimeout(async () => {
+        try {
+          const cleanNumber = targetPhone.trim().replace(/[^0-9]/g, '');
+          console.log(`⏳ Génération du code d'appairage pour : ${cleanNumber}...`);
+          let code = await sock.requestPairingCode(cleanNumber);
+          code = code?.match(/.{1,4}/g)?.join('-') || code;
+          console.log(`\n========================================`);
+          console.log(`🔑 CODE D'APPAIRAGE AKASHI XMD : ${code}`);
+          console.log(`========================================\n`);
+        } catch (err) {
+          console.error("Erreur génération code d'appairage :", err);
+        }
+      }, 4000);
+    } else {
+      console.log("⚠️ Aucun numéro configuré ! Ajoute la variable 'PHONE_NUMBER' dans les paramètres de Render.");
+    }
+  }
+
   sock.ev.on('groups.update', async ([event]) => {
     try {
       const metadata = await sock.groupMetadata(event.id);
@@ -100,15 +125,13 @@ async function startBot() {
     } catch {}
   });
 
-  // --- ÉCOUTEUR DE NOUVEAUX MEMBRES (BIENVENUE) ---
   sock.ev.on('group-participants.update', async (anu) => {
     try {
       const remoteJid = anu.id;
       const participants = anu.participants;
       
-      // Vérification des paramètres de bienvenue
       const settings = fs.existsSync('./settings.json') ? JSON.parse(fs.readFileSync('./settings.json', 'utf-8')) : { welcome: {} };
-      if (!settings.welcome?.[remoteJid]) return; // Ne fait rien si désactivé
+      if (!settings.welcome?.[remoteJid]) return;
 
       if (anu.action === 'add') {
         const metadata = await sock.groupMetadata(remoteJid).catch(() => null);
@@ -130,13 +153,8 @@ async function startBot() {
   });
 
   sock.ev.on('connection.update', (update) => {
-    const { connection, lastDisconnect, qr } = update;
+    const { connection, lastDisconnect } = update;
     
-    if (qr) {
-      console.log("📱 Scanne ce QR code depuis ton application WhatsApp :");
-      qrcode.generate(qr, { small: true });
-    }
-
     if (connection === 'open') {
       console.log('⚡ AKASHI XMD connecté et sécurisé avec succès ! (by devakashi)');
     } else if (connection === 'close') {
@@ -173,7 +191,6 @@ async function startBot() {
       const isGroup = remoteJid.endsWith('@g.us');
       const cleanSender = String(sender).replace(/[^0-9]/g, '');
 
-      // --- SYSTÈME ANTI-SPAM ---
       if (isGroup && !isAuthorized(sender, msg)) {
         const settings = fs.existsSync('./settings.json') ? JSON.parse(fs.readFileSync('./settings.json', 'utf-8')) : { antispam: {} };
         if (settings.antispam?.[remoteJid]) {
@@ -184,7 +201,7 @@ async function startBot() {
           if (now - userData.lastTime < 5000) {
             userData.count += 1;
             if (userData.count >= 5) {
-              await sock.sendMessage(remoteJid, { delete: msg.key }); // Supprime le message de spam
+              await sock.sendMessage(remoteJid, { delete: msg.key });
               await sock.sendMessage(remoteJid, { text: `⚠️ @${sender.split('@')[0]}, doucement sur le spam !`, mentions: [sender] });
               userData.count = 0;
             }
@@ -227,7 +244,6 @@ async function startBot() {
 
       if (commands.has(commandName)) {
         if (adminOnlyCommands.includes(commandName) && isGroup && !isAuthorized(sender, msg)) {
-          console.log(`⛔ Commande .${commandName} refusée pour ${sender}`);
           await sock.sendMessage(remoteJid, { text: "❌ Vous n'avez pas les permissions pour utiliser cette commande !" }, { quoted: msg });
           continue;
         }
