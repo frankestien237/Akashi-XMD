@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKASHI XMD - Panneau de Contrôle</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 50px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.5); max-width: 400px; width: 100%; }
+        h1 { color: #38bdf8; font-size: 24px; }
+        #status { font-weight: bold; margin: 15px 0; font-size: 18px; }
+        .connected { color: #22c55e; }
+        .disconnected { color: #ef4444; }
+        img { margin-top: 15px; border-radius: 8px; background: white; padding: 10px; max-width: 250px; }
+        input, button { padding: 10px; margin-top: 10px; width: 80%; border-radius: 6px; border: none; font-size: 16px; }
+        input { background: #334155; color: white; text-align: center; }
+        button { background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0ea5e9; }
+        #pairingCodeBox { margin-top: 15px; font-size: 20px; letter-spacing: 2px; color: #facc15; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>AKASHI XMD</h1>
+        <div id="status" class="disconnected">Statut : Déconnecté</div>
+        
+        <div id="qr-container">
+            <p>Scannez le QR Code :</p>
+            <img id="qrcode" src="" alt="En attente du QR Code...">
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+
+        <div>
+            <p>Ou utilisez un Code d'Appairage :</p>
+            <input type="text" id="phone" placeholder="Ex: 237698278163">
+            <br>
+            <button onclick="requestPairingCode()">Obtenir le Code</button>
+            <div id="pairingCodeBox"></div>
+        </div>
+    </div>
+
+    <script>
+        async function checkStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                const statusEl = document.getElementById('status');
+                const qrEl = document.getElementById('qrcode');
+
+                if (data.connected) {
+                    statusEl.innerText = "Statut : Connecté ✅";
+                    statusEl.className = "connected";
+                    qrEl.style.display = "none";
+                } else {
+                    statusEl.innerText = "Statut : Déconnecté ❌";
+                    statusEl.className = "disconnected";
+                    if (data.qr) {
+                        qrEl.src = data.qr;
+                        qrEl.style.display = "inline-block";
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function requestPairingCode() {
+            const phone = document.getElementById('phone').value;
+            if (!phone) return alert("Entrez un numéro valide !");
+            
+            document.getElementById('pairingCodeBox').innerText = "Génération...";
+            try {
+                const res = await fetch('/pairing-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+                if (data.code) {
+                    document.getElementById('pairingCodeBox').innerText = `Code : ${data.code}`;
+                } else {
+                    alert("Erreur : " + (data.error || "Impossible de générer le code"));
+                    document.getElementById('pairingCodeBox').innerText = "";
+                }
+            } catch (err) {
+                alert("Erreur de connexion au serveur.");
+                document.getElementById('pairingCodeBox').innerText = "";
+            }
+        }
+
+        setInterval(checkStatus, 3000);
+        checkStatus();
+    </script>
+</body>
+</html>
